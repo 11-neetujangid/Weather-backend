@@ -9,11 +9,15 @@ const userSchema = mongoose.Schema({
     city: String,
     field: String,
     password: { type: String, required: true },
+    curTime: String,
+
     tokens: [{
         token: { type: String, required: true }
     }],
-    title: String,
-    body: String,
+    city: String
+
+
+
 
 });
 
@@ -30,6 +34,16 @@ userSchema.pre('save', async function (next) {
     }
     next();
 })
+
+userSchema.pre('save', function (next) {
+
+    const now = new Date().toLocaleString();
+    console.log("date and time", now)
+    if (!this.date) {
+        this.date = now
+    }
+    next();
+});
 
 // Generating token
 userSchema.methods.generateAuthToken = async function () {

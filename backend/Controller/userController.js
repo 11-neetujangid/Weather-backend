@@ -1,13 +1,13 @@
 import bcrypt from 'bcryptjs';
 import user from '../model/userSchema.js';
-import log from '../model/logSchema.js'
+
 
 export const addUser = async (req, res) => {
     console.log("hello")
 
     console.log(req.body)
 
-    const { name, email, city, field, password } = req.body;
+    const { name, email, city, field, password} = req.body;
 
     if (!name || !email || !city || !field || !password) {
         console.log("if form not filled")
@@ -22,7 +22,7 @@ export const addUser = async (req, res) => {
             return res.status(422).json({ error: "Email already Exist" });
         }
 
-        const User = new user({ name, email, city, field, password });
+        const User = new user({ name, email, city, field, password});
         console.log("Users", User);
         // hasing
         const a = await User.save();
@@ -41,9 +41,11 @@ export const loginUser = async (req, res) => {
     console.log("login")
     console.log(req.body)
 
+    
+
     try {
         let token;
-        const { email, password, date, time } = req.body;
+        const { email, password} = req.body;
         console.log(req.body)
         if (!email || !password) {
 
@@ -60,6 +62,7 @@ export const loginUser = async (req, res) => {
 
             token = await userLogin.generateAuthToken();
             console.log(token);
+
             const id = userLogin._id;
             const name = userLogin.name;
             console.log(name)
@@ -71,13 +74,18 @@ export const loginUser = async (req, res) => {
             }
 
             else {
+
                 console.log("password is matched")
-                const User = new log({date});
-                console.log("date", User);
-               
-                await User.save();
+
+                const curTime = new Date().toLocaleString();
+                console.log(curTime);
                 
-                res.json({ message: "Successfully Login", token: token, id: userLogin._id, name: userLogin.name, date:User });
+                const User = user.updateOne({ email: userLogin.email }, {$set: { curTime: curTime } });
+                console.log("date");
+                await User.updateOne();
+
+
+                res.json({ message: "Successfully Login", token: token, id: userLogin._id, name: userLogin.name, date:curTime});
             }
 
         }
@@ -90,4 +98,11 @@ export const loginUser = async (req, res) => {
         console.log(err);
     }
 
-};
+}
+
+
+export const userCity = async (req, res) => {
+    console.log("city")
+    // console.log(req.body)
+     
+}

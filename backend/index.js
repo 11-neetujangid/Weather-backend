@@ -11,16 +11,16 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(cors());
 app.use('/users', route);
 
-var Url = 'https://api.openweathermap.org/data/2.5/weather?q=Indore&appid=b841d1ce2644a8991e7d8bea9907255e'
+// var Url = 'https://api.openweathermap.org/data/2.5/weather?q=Indore&appid=b841d1ce2644a8991e7d8bea9907255e'
 // console.log(Url)
 
-app.get('/', (req, res) => {
-    request(Url, function (err, res, body) {
-        var data = JSON.parse(body);
-        console.log(data);
+// app.get('/', (req, res) => {
+//     request(Url, function (err, res, body) {
+//         var data = JSON.parse(body);
+//         console.log(data);
 
-    })
-})
+//     })
+// })
 
 const port = 7000;
 const url = "mongodb://localhost:27017/weather";

@@ -1,5 +1,7 @@
 import bcrypt from 'bcryptjs';
 import user from '../model/userSchema.js';
+import request from 'request';
+import history from '../model/historySchema.js';
 
 
 export const addUser = async (req, res) => {
@@ -7,7 +9,7 @@ export const addUser = async (req, res) => {
 
     console.log(req.body)
 
-    const { name, email, city, field, password} = req.body;
+    const { name, email, city, field, password } = req.body;
 
     if (!name || !email || !city || !field || !password) {
         console.log("if form not filled")
@@ -22,7 +24,7 @@ export const addUser = async (req, res) => {
             return res.status(422).json({ error: "Email already Exist" });
         }
 
-        const User = new user({ name, email, city, field, password});
+        const User = new user({ name, email, city, field, password });
         console.log("Users", User);
         // hasing
         const a = await User.save();
@@ -41,11 +43,11 @@ export const loginUser = async (req, res) => {
     console.log("login")
     console.log(req.body)
 
-    
+
 
     try {
         let token;
-        const { email, password} = req.body;
+        const { email, password } = req.body;
         console.log(req.body)
         if (!email || !password) {
 
@@ -68,6 +70,9 @@ export const loginUser = async (req, res) => {
             console.log(name)
             console.log(id);
 
+            const email = userLogin.email;
+            console.log(email)
+
             if (!isMatch) {
                 console.log("error");
                 res.status(400).json({ error: "error" })
@@ -79,15 +84,12 @@ export const loginUser = async (req, res) => {
 
                 const curTime = new Date().toLocaleString();
                 console.log(curTime);
-                
-                const User = user.updateOne({ email: userLogin.email }, {$set: { curTime: curTime } });
+
+                const User = user.updateOne({ email: userLogin.email }, { $set: { curTime: curTime } });
                 console.log("date");
                 await User.updateOne();
-
-
-                res.json({ message: "Successfully Login", token: token, id: userLogin._id, name: userLogin.name, date:curTime});
+                res.json({ message: "Successfully Login", token: token, id: userLogin._id, name: userLogin.name, email: userLogin.email, date: curTime });
             }
-
         }
         else {
             res.status(400).json({ message: "error" })
@@ -99,10 +101,66 @@ export const loginUser = async (req, res) => {
     }
 
 }
-
-
 export const userCity = async (req, res) => {
-    console.log("city")
-    // console.log(req.body)
-     
+    console.log("city");
+    console.log(req.query);
+    try {
+        const { city, email } = req.query;
+        console.log(city);
+        console.log(email);
+
+
+        const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=b841d1ce2644a8991e7d8bea9907255e`
+        // console.log(url)
+        request(url, (err, response, body) => {
+            const data = JSON.parse(body);
+            console.log("city data", data.weather);
+            res.json(data.weather)
+        })
+
+        const User = new history({ city, email });
+        console.log("history", User);
+
+        const a = await User.save();
+        console.log("history data", a)
+
+
+    } catch (err) {
+        console.log("errrr")
+        res.json({ message: err.message })
+    }
 }
+
+export const weather = async (req, res) => {
+
+    console.log(req.query);
+    try {
+        const { lat, long } = req.query;
+        console.log(lat);
+        console.log(long);
+        const url = `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&appid=b841d1ce2644a8991e7d8bea9907255e`
+        request(url, (err, response, body) => {
+            const data = JSON.parse(body);
+            console.log(data);
+            res.status(200).json(data.weather);
+        })
+
+    } catch (err) {
+        console.log("errrr")
+        res.json({ message: err.message })
+    }
+}
+// export const getHistory = async (req, res) => {
+//         console.log("get users")
+//         try {
+//                 let User = await history.find();
+//                 console.log("get", User)
+//                 res.json(User);
+//         } catch (err) {
+//                 res.json({ message: err.message })
+//         }
+
+// }
+
+
+

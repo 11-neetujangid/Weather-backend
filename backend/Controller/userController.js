@@ -2,11 +2,11 @@ import bcrypt from 'bcryptjs';
 import user from '../model/userSchema.js';
 import request from 'request';
 import history from '../model/historySchema.js';
+import log from '../model/logsSchema.js';
 
 
 export const addUser = async (req, res) => {
     console.log("hello")
-
     console.log(req.body)
 
     const { name, email, city, field, password } = req.body;
@@ -88,7 +88,14 @@ export const loginUser = async (req, res) => {
                 const User = user.updateOne({ email: userLogin.email }, { $set: { curTime: curTime } });
                 console.log("date");
                 await User.updateOne();
+
+                console.log(curTime)
+                const LogDate = new log({ email, curTime });
+                console.log("Log", LogDate);
+                const a = await LogDate.save();
+                console.log(a)
                 res.json({ message: "Successfully Login", token: token, id: userLogin._id, name: userLogin.name, email: userLogin.email, date: curTime });
+
             }
         }
         else {
@@ -105,24 +112,37 @@ export const userCity = async (req, res) => {
     console.log("city");
     console.log(req.query);
     try {
-        const { city, email } = req.query;
+        const { city, email, data } = req.query;
         console.log(city);
         console.log(email);
 
 
         const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=b841d1ce2644a8991e7d8bea9907255e`
         // console.log(url)
-        request(url, (err, response, body) => {
+        request(url, async (err, response, body) => {
             const data = JSON.parse(body);
-            console.log("city data", data.weather);
-            res.json(data.weather)
+            console.log(data);
+
+            const weatherData = data.weather;
+            console.log("city data", weatherData);
+            res.json(data.weather);
+
+            const curTime = new Date().toLocaleString();
+            console.log(curTime);
+            // const weatherdes = data.weather.description
+            const User = new history({ email, city, curTime, weatherData});
+            console.log("history", User);
+            const a = await User.save();
+            console.log("history data", a);
+
         })
+        // const curTime = new Date().toLocalString();
+        // console.log(curTime);
 
-        const User = new history({ city, email });
-        console.log("history", User);
-
-        const a = await User.save();
-        console.log("history data", a)
+        // const User = new history({ email,city, curTime});
+        // console.log("history", User);
+        // const a = await User.save();
+        // console.log("history data", a);
 
 
     } catch (err) {
@@ -150,17 +170,19 @@ export const weather = async (req, res) => {
         res.json({ message: err.message })
     }
 }
-// export const getHistory = async (req, res) => {
-//         console.log("get users")
-//         try {
-//                 let User = await history.find();
-//                 console.log("get", User)
-//                 res.json(User);
-//         } catch (err) {
-//                 res.json({ message: err.message })
-//         }
+export const getHistory = async (req, res) => {
+    console.log("get history data");
+    const email = req.params.email;
+    console.log(email)
+    try {
+        const data = await history.find({ email: email });
+        console.log("get", data)
+        res.json(data);
+    } catch (err) {
+        res.json({ message: err.message })
+    }
 
-// }
+}
 
 
 

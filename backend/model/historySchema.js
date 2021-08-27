@@ -4,6 +4,10 @@ import autoIncrement from 'mongoose-auto-increment';
 const historySchema = mongoose.Schema({
     email: String,
     city: String,
+    curTime: String,
+    weatherData: Object
+
+
 });
 
 autoIncrement.initialize(mongoose.connection);

@@ -14,10 +14,6 @@ const userSchema = mongoose.Schema({
     tokens: [{
         token: { type: String, required: true }
     }],
-    // city: String
-
-
-
 
 });
 
